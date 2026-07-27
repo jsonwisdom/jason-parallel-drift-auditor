@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "thresholds": {
+    "warn_infrastructure_ratio": 0.6,
+    "fail_severity": "critical"
+  },
+  "exclude": [
+    ".git",
+    "node_modules",
+    "vendor",
+    "dist",
+    "build",
+    ".venv",
+    "__pycache__",
+    "audit-output"
+  ],
+  "secret_scan_exclude": [
+    "tests/fixtures/",
+    "tests/test_audit.py"
+  ],
+  "influence_scan_exclude": [
+    "auditor/",
+    "tests/",
+    ".github/jpa-audit.json",
+    "audit-output/"
+  ]
+}

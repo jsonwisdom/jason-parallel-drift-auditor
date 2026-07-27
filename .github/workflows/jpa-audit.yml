@@ -1,0 +1,57 @@
+name: Jason Parallel-Drift Audit
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      fail_on:
+        description: Minimum severity that blocks the run
+        required: false
+        default: critical
+        type: choice
+        options: [critical, high, medium]
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: jpa-audit-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout reviewed revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - name: Run evidence-first audit
+        env:
+          FAIL_ON: ${{ inputs.fail_on || 'critical' }}
+        run: |
+          python3 auditor/audit.py \
+            --root . \
+            --config .github/jpa-audit.json \
+            --output audit-output \
+            --fail-on "$FAIL_ON"
+
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: jpa-audit-${{ github.sha }}
+          path: audit-output/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish security findings
+        if: always() && hashFiles('audit-output/audit.sarif') != ''
+        uses: github/codeql-action/upload-sarif@b374143c1149a9115d881581d29b8390bbcbb59c
+        with:
+          sarif_file: audit-output/audit.sarif
