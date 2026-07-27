@@ -15,14 +15,26 @@ on:
 
 permissions:
   contents: read
-  security-events: write
 
 concurrency:
   group: jpa-audit-${{ github.repository }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout reviewed revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - name: Unit tests
+        run: python3 -m unittest discover -s tests -v
+
   audit:
+    needs: unit-tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -50,8 +62,29 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  publish-sarif:
+    needs: audit
+    if: always() && needs.audit.result == 'success'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Download audit evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: jpa-audit-${{ github.sha }}
+          path: audit-output
+
       - name: Publish security findings
-        if: always() && hashFiles('audit-output/audit.sarif') != ''
         uses: github/codeql-action/upload-sarif@b374143c1149a9115d881581d29b8390bbcbb59c
         with:
           sarif_file: audit-output/audit.sarif
+
+      - name: Record SARIF publication state
+        if: always()
+        run: |
+          echo "## SARIF publication" >> "$GITHUB_STEP_SUMMARY"
+          echo "The optional Code Scanning integration ran separately from the required audit." >> "$GITHUB_STEP_SUMMARY"

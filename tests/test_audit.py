@@ -3,7 +3,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from auditor.audit import DEFAULT_CONFIG, audit, load_config, term_count
+from auditor.audit import (
+    DEFAULT_CONFIG,
+    audit,
+    load_config,
+    render_sarif,
+    term_count,
+)
 
 
 MISSION = """# Mission
@@ -57,6 +63,51 @@ class AuditorTests(unittest.TestCase):
     def test_vendor_terms_do_not_match_substrings(self):
         self.assertEqual(term_count("associated software", "oci"), 0)
         self.assertEqual(term_count("Oracle dependency", "oracle"), 1)
+
+    def test_sarif_preserves_file_location(self):
+        report = {
+            "findings": [
+                {
+                    "test_id": "SEC-001",
+                    "severity": "high",
+                    "title": "Sensitive file",
+                    "evidence": "Observed",
+                    "path": "secrets/example.asc",
+                    "line": 7,
+                }
+            ]
+        }
+        result = render_sarif(report)["runs"][0]["results"][0]
+        location = result["locations"][0]["physicalLocation"]
+        self.assertEqual(location["artifactLocation"]["uri"], "secrets/example.asc")
+        self.assertEqual(location["region"]["startLine"], 7)
+
+    def test_location_completeness_uses_repository_fallback(self):
+        report = {
+            "findings": [
+                {
+                    "test_id": "JPA-002",
+                    "severity": "medium",
+                    "title": "Repository-level finding",
+                    "evidence": "Observed",
+                    "path": None,
+                    "line": None,
+                },
+                {
+                    "test_id": "SEC-003",
+                    "severity": "high",
+                    "title": "File-level finding",
+                    "evidence": "Observed",
+                    "path": ".github/workflows/audit.yml",
+                    "line": 12,
+                },
+            ]
+        }
+        results = render_sarif(report)["runs"][0]["results"]
+        self.assertTrue(all(result.get("locations") for result in results))
+        fallback = results[0]["locations"][0]["physicalLocation"]
+        self.assertEqual(fallback["artifactLocation"]["uri"], ".github/jpa-audit.json")
+        self.assertEqual(fallback["region"]["startLine"], 1)
 
 
 if __name__ == "__main__":

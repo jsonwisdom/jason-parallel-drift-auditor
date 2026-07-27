@@ -427,6 +427,18 @@ def render_markdown(report: dict) -> str:
     return "\n".join(lines)
 
 
+def sarif_location(item: dict) -> dict:
+    """Return a real or explicit repository-level fallback location."""
+    return {
+        "physicalLocation": {
+            "artifactLocation": {
+                "uri": item.get("path") or ".github/jpa-audit.json"
+            },
+            "region": {"startLine": item.get("line") or 1},
+        }
+    }
+
+
 def render_sarif(report: dict) -> dict:
     results = []
     for item in report["findings"]:
@@ -437,15 +449,7 @@ def render_sarif(report: dict) -> dict:
             ),
             "message": {"text": f"{item['title']}: {item['evidence']}"},
         }
-        if item.get("path"):
-            result["locations"] = [
-                {
-                    "physicalLocation": {
-                        "artifactLocation": {"uri": item["path"]},
-                        "region": {"startLine": item.get("line") or 1},
-                    }
-                }
-            ]
+        result["locations"] = [sarif_location(item)]
         results.append(result)
     return {
         "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
