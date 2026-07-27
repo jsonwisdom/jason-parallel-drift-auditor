@@ -1,0 +1,71 @@
+name: Night Watch Compression
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "light | deep | weekly"
+        required: false
+        default: "light"
+        type: choice
+        options: [light, deep, weekly]
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+  actions: read
+
+concurrency:
+  group: jpa-portfolio-night-watch
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout reviewed revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Unit tests
+        run: python3 -m unittest discover -s tests -p "test_nightwatch.py" -v
+
+  rotate:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout reviewed revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Require read-only portfolio credential
+        env:
+          JPA_PORTFOLIO_TOKEN: ${{ secrets.JPA_PORTFOLIO_TOKEN }}
+        run: test -n "$JPA_PORTFOLIO_TOKEN"
+      - name: Run compression rotation
+        env:
+          JPA_PORTFOLIO_TOKEN: ${{ secrets.JPA_PORTFOLIO_TOKEN }}
+          MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || '' }}
+        run: python3 -m nightwatch.main
+      - name: Publish ledger summary
+        if: always()
+        run: |
+          ledger="$(find ledgers -maxdepth 1 -name 'rotation-*.md' -print -quit 2>/dev/null)"
+          if [ -n "$ledger" ]; then
+            cat "$ledger" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## Night Watch failed before producing a ledger" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload hash-bound ledgers
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: night-watch-ledgers-${{ github.run_id }}
+          path: ledgers/
+          if-no-files-found: error
+          retention-days: 30
