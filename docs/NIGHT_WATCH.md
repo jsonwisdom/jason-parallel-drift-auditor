@@ -3,9 +3,19 @@
 Night Watch performs a read-only rotation across repositories owned by
 `jsonwisdom`, including private repositories visible to its credential.
 
+## Goal
+
+Reduce the actively maintained governance surface to no more than 10
+repositories. Compression is ranking and governance-surface reduction—not
+deletion and not a claim that GitHub archive status reclaims storage.
+
 ## Schedule
 
-The workflow runs nightly at `11:00 UTC` and may also be started manually.
+- Hourly: light metadata and ranking delta
+- Daily at 01:00 UTC: deep PR and repository evidence
+- Sunday at 03:00 UTC: storage, artifact, and dependency evidence
+
+A single hourly trigger selects the appropriate mode, avoiding duplicate runs.
 
 ## Required secret
 
@@ -23,14 +33,13 @@ write access.
 
 ## Evidence
 
-Each completed rotation uploads:
+Each completed rotation uploads uniquely named, hash-bound ledgers:
 
-- `portfolio-ledger.json`
-- `portfolio-ledger.md`
+- `rotation-<run-id>.json`
+- `rotation-<run-id>.md`
 
-The JSON report contains a SHA-256 digest, the observed head SHA of every open
-pull request, check totals, classification reasons, and explicit
-`authority: false` / `mutations_performed: 0` fields.
+The ledger ranks repositories as `KEEP_ACTIVE`, `CONSOLIDATE`,
+`ARCHIVE_CANDIDATE`, or `HUMAN_DECISION`. It never emits `DELETE`.
 
 ## Notification boundary
 
