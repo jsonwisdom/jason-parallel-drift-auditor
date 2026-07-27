@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jsonwisdom.example/schemas/jpa-audit-report-v1.json",
+  "title": "Jason Parallel-Drift Audit Report",
+  "type": "object",
+  "required": [
+    "schema",
+    "repository",
+    "commit",
+    "generated_at",
+    "verdict",
+    "metrics",
+    "findings",
+    "report_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "jpa-audit-report/v1"},
+    "repository": {"type": "string"},
+    "commit": {"type": "string"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "verdict": {"enum": ["PASS", "REVIEW_REQUIRED", "BLOCKED"]},
+    "metrics": {"type": "object"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["test_id", "classification", "severity", "title", "evidence"],
+        "properties": {
+          "test_id": {"type": "string"},
+          "classification": {
+            "enum": ["OBSERVED", "INFERRED", "UNVERIFIED", "CONTRADICTED"]
+          },
+          "severity": {
+            "enum": ["info", "low", "medium", "high", "critical"]
+          },
+          "title": {"type": "string"},
+          "evidence": {"type": "string"},
+          "path": {"type": ["string", "null"]},
+          "line": {"type": ["integer", "null"]},
+          "correction": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "report_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
