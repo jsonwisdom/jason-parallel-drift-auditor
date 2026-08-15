@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jsonwisdom.example/schemas/economics-receipt.schema.json",
+  "title": "Economics Receipt v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "metric",
+    "period",
+    "currency",
+    "value",
+    "economic_state",
+    "accounting_class",
+    "classification_version",
+    "sources",
+    "authority_created"
+  ],
+  "properties": {
+    "schema": {"const": "economics-receipt/v0.1"},
+    "metric": {"type": "string", "minLength": 1},
+    "period": {"type": "string", "minLength": 1},
+    "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+    "value": {"type": "number"},
+    "economic_state": {
+      "enum": ["MODELED", "PIPELINE", "CONTRACTED", "INVOICED", "COLLECTED", "VERIFIED"]
+    },
+    "accounting_class": {
+      "enum": ["REVENUE", "COGS", "OPERATING_EXPENSE", "CAPITAL_EXPENDITURE", "UNCLASSIFIED"]
+    },
+    "classification_version": {"type": "string", "minLength": 1},
+    "auditor_version": {"type": "string"},
+    "recurring_basis": {"type": "boolean"},
+    "unclassified_direct_costs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "calculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {"enum": ["NONE", "SUBTRACTION", "RATIO"]},
+        "left": {"type": "number"},
+        "right": {"type": "number"},
+        "tolerance": {"type": "number", "minimum": 0}
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "evidence_class"],
+        "properties": {
+          "source_id": {"type": "string", "minLength": 1},
+          "evidence_class": {
+            "enum": [
+              "MODELED_ASSUMPTION",
+              "PIPELINE_RECORD",
+              "SIGNED_CONTRACT",
+              "INVOICE",
+              "PAYMENT_RECEIPT",
+              "REPLAY_RECEIPT"
+            ]
+          },
+          "period": {"type": "string"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "uri": {"type": "string"}
+        }
+      }
+    },
+    "claim_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "calculation_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "authority_created": {"const": false}
+  }
+}
