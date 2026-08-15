@@ -1,0 +1,38 @@
+{
+  "schema": "economics-receipt/v0.1",
+  "metric": "INFRASTRUCTURE_CONTRIBUTION",
+  "period": "MODEL-v0.3",
+  "currency": "USD",
+  "value": 535560,
+  "economic_state": "MODELED",
+  "accounting_class": "UNCLASSIFIED",
+  "classification_version": "economics-v0.3",
+  "unclassified_direct_costs": [
+    "human verification labor",
+    "customer-specific processing",
+    "implementation labor",
+    "delivery-linked support",
+    "storage",
+    "compute",
+    "third-party APIs"
+  ],
+  "calculation": {
+    "kind": "SUBTRACTION",
+    "left": 688560,
+    "right": 153000,
+    "tolerance": 0
+  },
+  "sources": [
+    {
+      "source_id": "MODELED_REVENUE_v0.3",
+      "evidence_class": "MODELED_ASSUMPTION",
+      "period": "MODEL-v0.3"
+    },
+    {
+      "source_id": "MODELED_INFRASTRUCTURE_COST_v0.3",
+      "evidence_class": "MODELED_ASSUMPTION",
+      "period": "MODEL-v0.3"
+    }
+  ],
+  "authority_created": false
+}
