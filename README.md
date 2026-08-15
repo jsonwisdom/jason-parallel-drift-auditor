@@ -79,9 +79,28 @@ was designed to detect.
 - SEC-004 overbroad `write-all`
 - SUPPLY-001 unpinned GitHub Actions
 
+## Economics extension v0.1
+
+Economic claims can be audited separately with:
+
+```bash
+python3 auditor/economics_audit.py \
+  examples/economics-modeled-contribution.v0.1.json
+```
+
+The extension enforces independent `ECONOMIC_STATE` and `ACCOUNTING_CLASS`
+labels, promotion gates, deterministic calculation replay, recurring-revenue
+basis checks, SHA-256 identity for byte-bound commercial evidence, and
+`authority_created=false`.
+
+See `economics/ECONOMICS_AUDITOR_MECHANICS_v0.1.md` and
+`schemas/economics-receipt.schema.json`.
+
 ## Deliberate boundary
 
 Text hits establish presence, not motive. Vendor names are influence lenses, not
 culpability findings. A receipt proves only the evidence it binds. This tool
 does not determine copyright, legal ownership, or authorization outside the
-repository record.
+repository record. The economics extension does not constitute a CPA audit,
+GAAP opinion, tax determination, bank confirmation, or proof of an underlying
+commercial event outside its bound evidence.
