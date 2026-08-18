@@ -1,0 +1,23 @@
+{
+  "schema": "identity-audit-envelope/v0.1",
+  "identity_label": "jaywisdom.eth",
+  "identity_class": "OPERATOR_LABEL",
+  "declared_association": true,
+  "independent_person_bind": false,
+  "ens_resolution_checked": false,
+  "wallet_ownership_proven": false,
+  "legal_identity_proven": false,
+  "sources": [
+    {
+      "source_id": "drive:economics-auditor-mechanics-v0.1",
+      "evidence_class": "USER_CONTROLLED_RECORD",
+      "uri": "gdrive:1SdtYnvpcwEUYmyEcyitZRp01xYOfMVXTbzAal6Z9OKY"
+    }
+  ],
+  "disposition": "PASS",
+  "notes": [
+    "PASS means only that the operator-label association is declared in an existing user-controlled record.",
+    "No ENS resolution, wallet control, natural-person identity, or legal authority is proven by this envelope."
+  ],
+  "authority_created": false
+}
