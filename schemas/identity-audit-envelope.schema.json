@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jsonwisdom.example/schemas/identity-audit-envelope.schema.json",
+  "title": "Identity Audit Envelope v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "identity_label",
+    "identity_class",
+    "declared_association",
+    "independent_person_bind",
+    "ens_resolution_checked",
+    "wallet_ownership_proven",
+    "legal_identity_proven",
+    "sources",
+    "disposition",
+    "authority_created"
+  ],
+  "properties": {
+    "schema": {"const": "identity-audit-envelope/v0.1"},
+    "identity_label": {"type": "string", "minLength": 1},
+    "identity_class": {"enum": ["OPERATOR_LABEL", "ACCOUNT_LABEL", "ENS_LABEL", "WALLET_LABEL", "NATURAL_PERSON_CLAIM"]},
+    "declared_association": {"type": "boolean"},
+    "independent_person_bind": {"type": "boolean"},
+    "ens_resolution_checked": {"type": "boolean"},
+    "wallet_ownership_proven": {"type": "boolean"},
+    "legal_identity_proven": {"type": "boolean"},
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "evidence_class"],
+        "properties": {
+          "source_id": {"type": "string", "minLength": 1},
+          "evidence_class": {"enum": ["SELF_DECLARATION", "USER_CONTROLLED_RECORD", "ACCOUNT_RECEIPT", "CRYPTOGRAPHIC_CONTROL_PROOF", "INDEPENDENT_IDENTITY_EVIDENCE", "LAWFUL_AUTHORITY_RECEIPT"]},
+          "uri": {"type": "string"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "disposition": {"enum": ["PASS", "HOLD", "CONFLICT", "REJECT"]},
+    "notes": {"type": "array", "items": {"type": "string"}},
+    "authority_created": {"const": false}
+  }
+}
